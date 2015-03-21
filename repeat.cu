@@ -21,6 +21,8 @@ void simpleMerge(int *items, int *freqs, int *result, int *pos) {
 	__syncthreads();
 }
 
+
+
 int main(void) {
 
 	int items[5] = { 2, 5, 8, 2, 10 };
