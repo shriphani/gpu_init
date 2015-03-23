@@ -5,18 +5,21 @@ using namespace mgpu;
 void scanReduceShit(CudaContext &context) {
 	int N = 1000;
 
-	MGPU_MEM(int) data = context.GenRandom<int>(N, 0, 9);
-	printf("Input Array\n");
-	PrintArray(*data, "%4d", 10);
+	int data2[N];
+
+	for (int i = 0; i < N; i++) {
+		data2[i] = i;
+	}
+
+	int *deviceData2;
+
+	cudaMalloc((void **) &deviceData2, sizeof(int) * N);
+	cudaMemcpy((void *) deviceData2, (const void *) data2, sizeof(int) * N, cudaMemcpyHostToDevice);
 
 	// reduce - sum
-	int total = Reduce(data->get(), N, context);
+	int total = Reduce(deviceData2, N, context);
 	printf("Total: %d\n", total);
 
-	// reduce - max
-	int reduce;
-	Reduce(data->get(), N, INT_MIN, maximum<int>(), (int*)0, &reduce, context);
-	printf("Max: %d", reduce);
 }
 
 int main(int argc, char** argv) {
