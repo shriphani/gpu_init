@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "moderngpu.cuh"
 
+#define EXIT_SUCCESS 0
+
 using namespace mgpu;
 
 /**
@@ -24,7 +26,7 @@ void binarySearchRepeat(int *items, int *freqs, int *result, int *pos, int numIt
 	// what to write
 	int itemIdx = BinarySearch<MgpuBoundsLower>(pos, numItems, gid, less_equal<int>());
 
-	printf("At %d, writing %d\n", gid, itemIdx - 1);
+	// printf("At %d, writing %d\n", gid, itemIdx - 1);
 
 	result[gid] = items[itemIdx - 1]; 
 
@@ -33,11 +35,10 @@ void binarySearchRepeat(int *items, int *freqs, int *result, int *pos, int numIt
 int main(int argc, char ** argv) {
 	ContextPtr context = CreateCudaDevice(argc, argv, true);
 
-	int N = 5;
-
 	int items[5] = { 2, 5, 8, 2, 10 };
 	int freqs[5] = { 10, 3, 0, 6, 5 };
 
+	int N = 5;
 	int CTASize = 1024;
 
 	int *deviceItems, *deviceFreqs, *deviceResult, *devicePos, resultSize;
@@ -62,12 +63,15 @@ int main(int argc, char ** argv) {
 
 	cudaMemcpy( result, deviceResult, resultSize * sizeof(int), cudaMemcpyDeviceToHost );
 
+	cudaFree(deviceItems);
+	cudaFree(deviceFreqs);
+	cudaFree(deviceResult);
+	cudaFree(devicePos);	
+
 	for (int i = 0; i < resultSize; i++) {
 		printf("%d, ", result[i]);
 	}
 
-	cudaFree(deviceItems);
-	cudaFree(deviceFreqs);
-	cudaFree(deviceResult);
-	cudaFree(devicePos);
+	return EXIT_SUCCESS;
+
 }

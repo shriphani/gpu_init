@@ -12,14 +12,14 @@ void simpleMerge(int *items, int *freqs, int *result, int *pos, int numItems) {
 		return;
 	}
 
-	printf("ThreadId: %d", gid);
+	//printf("ThreadId: %d", gid);
 
 	int item = items[gid];
 	int freq = freqs[gid];
 
 	int position = pos[gid];
 
-	printf( "Put %d at %d, %d times\n", item, position, freq );
+	//printf( "Put %d at %d, %d times\n", item, position, freq );
 
 	for (int i = 0; i < freq; i++) {
 		result[position+i] = item;
@@ -29,11 +29,10 @@ void simpleMerge(int *items, int *freqs, int *result, int *pos, int numItems) {
 int main(int argc, char ** argv) {
 	ContextPtr context = CreateCudaDevice(argc, argv, true);
 
-	int N = 5;
-
 	int items[5] = { 2, 5, 8, 2, 10 };
 	int freqs[5] = { 10, 3, 0, 6, 5 };
 
+	int N = 5;
 	int CTASize = 1024;
 	int numBlocks = 1 + (N / CTASize);
 
