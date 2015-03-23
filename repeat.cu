@@ -1,78 +1,68 @@
-#include<stdio.h>
+#include <stdio.h>
+#include "moderngpu.cuh"
+
+using namespace mgpu;
 
 __global__
-void simpleMerge(int *items, int *freqs, int *result, int *pos) {
+void simpleMerge(int *items, int *freqs, int *result, int *pos, int numItems) {
 
-	int idx = threadIdx.x;
+	int gid = threadIdx.x + blockIdx.x * blockDim.x;
 
-	printf("ThreadId: %d", idx);
+	if (gid > numItems) {
+		return;
+	}
 
-	int item = items[idx];
-	int freq = freqs[idx];
+	printf("ThreadId: %d", gid);
 
-	int position = pos[idx];
+	int item = items[gid];
+	int freq = freqs[gid];
+
+	int position = pos[gid];
 
 	printf( "Put %d at %d, %d times\n", item, position, freq );
 
 	for (int i = 0; i < freq; i++) {
 		result[position+i] = item;
 	}
-
-	__syncthreads();
 }
 
+int main(int argc, char ** argv) {
+	ContextPtr context = CreateCudaDevice(argc, argv, true);
 
-
-int main(void) {
+	int N = 5;
 
 	int items[5] = { 2, 5, 8, 2, 10 };
 	int freqs[5] = { 10, 3, 0, 6, 5 };
-	
-	int pos[5];
 
-	int *deviceItems, *deviceFreqs, *result, *devicePos;
+	int CTASize = 1024;
+	int numBlocks = 1 + (N / CTASize);
 
-	int resultSize = 0;
+	int *deviceItems, *deviceFreqs, *deviceResult, *devicePos, resultSize;
 
-	for (int i = 0; i < 5; i++) {
-		resultSize += freqs[i];
-	}
+	cudaMalloc( (void **)&deviceItems, N * sizeof(int));
+	cudaMalloc( (void **)&deviceFreqs, N * sizeof(int));
+	cudaMalloc( (void **)&devicePos, N * sizeof(int));
 
-	printf("%d\n", resultSize);
-	fflush( stdout );
+	cudaMemcpy( deviceItems, items, N * sizeof(int), cudaMemcpyHostToDevice);
+	cudaMemcpy( deviceFreqs, freqs, N * sizeof(int), cudaMemcpyHostToDevice);
+	cudaMemcpy( devicePos, freqs, N * sizeof(int), cudaMemcpyHostToDevice);
 
-	int hostResult[resultSize];
+	ScanExc(devicePos, N, &resultSize, *context);
 
-	int curPos = 0;
-	for (int i = 0; i < 5; i++) {
+	cudaMalloc( (void **)&deviceResult, resultSize * sizeof(int));
 
-		if (i == 0) {
-			pos[i] = 0;
-		}
-		else {
-			curPos += freqs[i-1];
-			pos[i] = curPos;
-		}
+	simpleMerge<<<numBlocks, CTASize>>>(deviceItems, deviceFreqs, deviceResult, devicePos, N);
 
-	}
+	int result[resultSize];
 
-	printf("%d\n", curPos);
-
-	cudaMalloc( (void **)&deviceItems, 5 * sizeof(int));
-	cudaMalloc( (void **)&deviceFreqs, 5 * sizeof(int));
-	cudaMalloc( (void **)&result, resultSize * sizeof(int));
-	cudaMalloc( (void **)&devicePos, 5 * sizeof(int));
-	
-
-	cudaMemcpy( deviceItems, items, 5 * sizeof(int), cudaMemcpyHostToDevice);
-	cudaMemcpy( deviceFreqs, freqs, 5 * sizeof(int), cudaMemcpyHostToDevice);
-	cudaMemcpy( devicePos,   pos, 5 * sizeof(int), cudaMemcpyHostToDevice);
-
-	simpleMerge<<<1,5>>>(deviceItems, deviceFreqs, result, devicePos);
-
-	cudaMemcpy( hostResult, result, resultSize * sizeof(int), cudaMemcpyDeviceToHost );
+	cudaMemcpy( result, deviceResult, resultSize * sizeof(int), cudaMemcpyDeviceToHost );
 
 	for (int i = 0; i < resultSize; i++) {
-		printf("%d, ", hostResult[i]);
+		printf("%d, ", result[i]);
 	}
+
+	cudaFree(deviceItems);
+	cudaFree(deviceFreqs);
+	cudaFree(deviceResult);
+	cudaFree(devicePos);
 }
