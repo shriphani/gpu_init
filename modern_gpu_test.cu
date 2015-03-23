@@ -20,6 +20,9 @@ void scanReduceShit(CudaContext &context) {
 	int total = Reduce(deviceData2, N, context);
 	printf("Total: %d\n", total);
 
+	ScanExc(deviceData2, N, &total, context);
+	printf("Total: %d\n", total);
+
 }
 
 int main(int argc, char** argv) {
