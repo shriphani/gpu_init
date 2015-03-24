@@ -27,6 +27,10 @@ void simpleMerge(int *items, int *freqs, int *result, int *pos, int numItems) {
 }
 
 int *partitionAndRun(int *items, int *freqs, int N, int &resultSize, ContextPtr context) {
+#ifdef PROFILING
+	cudaProfilerInitialize();
+#endif
+
 	int CTASize = 1024;
 	int numBlocks = 1 + (N / CTASize);
 

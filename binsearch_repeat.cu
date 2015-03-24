@@ -33,6 +33,11 @@ void binarySearchRepeat(int *items, int *freqs, int *result, int *pos, int numIt
  **/
 int *partitionAndRun(int *items, int *freqs, int N, int &resultSize, ContextPtr context) {
 
+#ifdef PROFILING
+	printf("PROFILING!!!\n");
+	cudaProfilerInitialize();
+#endif
+
 	int CTASize = 1024;
 
 	int *deviceItems, *deviceFreqs, *deviceResult, *devicePos;
@@ -54,7 +59,6 @@ int *partitionAndRun(int *items, int *freqs, int N, int &resultSize, ContextPtr 
 	int *result = new int[resultSize];
 
 #ifdef PROFILING
-	printf("PROFILING!!!\n");
 	cudaProfilerStart();
 #endif
 
