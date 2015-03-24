@@ -26,22 +26,18 @@ void binarySearchRepeat(int *items, int *freqs, int *result, int *pos, int numIt
 	// what to write
 	int itemIdx = BinarySearch<MgpuBoundsLower>(pos, numItems, gid, less_equal<int>());
 
-	// printf("At %d, writing %d\n", gid, itemIdx - 1);
-
 	result[gid] = items[itemIdx - 1]; 
 
 }
 
-int main(int argc, char ** argv) {
-	ContextPtr context = CreateCudaDevice(argc, argv, true);
+/**
+ * Set parts up and so on.
+ **/
+int *partitionAndRun(int *items, int *freqs, int N, int &resultSize, ContextPtr context) {
 
-	int items[5] = { 2, 5, 8, 2, 10 };
-	int freqs[5] = { 10, 3, 0, 6, 5 };
-
-	int N = 5;
 	int CTASize = 1024;
 
-	int *deviceItems, *deviceFreqs, *deviceResult, *devicePos, resultSize;
+	int *deviceItems, *deviceFreqs, *deviceResult, *devicePos;
 
 	cudaMalloc( (void **)&deviceItems, N * sizeof(int));
 	cudaMalloc( (void **)&deviceFreqs, N * sizeof(int));
@@ -57,9 +53,9 @@ int main(int argc, char ** argv) {
 
 	int numBlocks = 1 + (resultSize / CTASize);
 
-	binarySearchRepeat<<<numBlocks, CTASize>>>(deviceItems, deviceFreqs, deviceResult, devicePos, N, resultSize);
+	int *result = new int[resultSize];
 
-	int result[resultSize];
+	binarySearchRepeat<<<numBlocks, CTASize>>>(deviceItems, deviceFreqs, deviceResult, devicePos, N, resultSize);
 
 	cudaMemcpy( result, deviceResult, resultSize * sizeof(int), cudaMemcpyDeviceToHost );
 
@@ -68,10 +64,27 @@ int main(int argc, char ** argv) {
 	cudaFree(deviceResult);
 	cudaFree(devicePos);	
 
+
+	return result;
+}
+
+int main(int argc, char ** argv) {
+	ContextPtr context = CreateCudaDevice(argc, argv, true);
+
+	int items[5] = { 2, 5, 8, 2, 10 };
+	int freqs[5] = { 10, 3, 0, 6, 5 };
+
+	int N = 5;
+	int resultSize;
+
+	int *result = partitionAndRun(items, freqs, N, resultSize, context);
+	
 	for (int i = 0; i < resultSize; i++) {
 		printf("%d, ", result[i]);
 	}
 
-	return EXIT_SUCCESS;
+	printf("\n");
+
+	delete[] result;
 
 }

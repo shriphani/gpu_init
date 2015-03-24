@@ -26,17 +26,11 @@ void simpleMerge(int *items, int *freqs, int *result, int *pos, int numItems) {
 	}
 }
 
-int main(int argc, char ** argv) {
-	ContextPtr context = CreateCudaDevice(argc, argv, true);
-
-	int items[5] = { 2, 5, 8, 2, 10 };
-	int freqs[5] = { 10, 3, 0, 6, 5 };
-
-	int N = 5;
+int *partitionAndRun(int *items, int *freqs, int N, int &resultSize, ContextPtr context) {
 	int CTASize = 1024;
 	int numBlocks = 1 + (N / CTASize);
 
-	int *deviceItems, *deviceFreqs, *deviceResult, *devicePos, resultSize;
+	int *deviceItems, *deviceFreqs, *deviceResult, *devicePos;
 
 	cudaMalloc( (void **)&deviceItems, N * sizeof(int));
 	cudaMalloc( (void **)&deviceFreqs, N * sizeof(int));
@@ -52,16 +46,34 @@ int main(int argc, char ** argv) {
 
 	simpleMerge<<<numBlocks, CTASize>>>(deviceItems, deviceFreqs, deviceResult, devicePos, N);
 
-	int result[resultSize];
+	int *result = new int[resultSize];
 
 	cudaMemcpy( result, deviceResult, resultSize * sizeof(int), cudaMemcpyDeviceToHost );
-
-	for (int i = 0; i < resultSize; i++) {
-		printf("%d, ", result[i]);
-	}
 
 	cudaFree(deviceItems);
 	cudaFree(deviceFreqs);
 	cudaFree(deviceResult);
 	cudaFree(devicePos);
+
+	return result;
+}
+
+int main(int argc, char ** argv) {
+	ContextPtr context = CreateCudaDevice(argc, argv, true);
+
+	int items[5] = { 2, 5, 8, 2, 10 };
+	int freqs[5] = { 10, 3, 0, 6, 5 };
+
+	int N = 5;
+	int resultSize;
+
+	int *result = partitionAndRun(items, freqs, N, resultSize, context);
+
+	for (int i = 0; i < resultSize; i++) {
+		printf("%d, ", result[i]);
+	}
+
+	printf("\n");
+
+	delete[] result;
 }

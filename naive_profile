@@ -1,0 +1,34 @@
+==24315== NVPROF is profiling process 24315, command: ./naive
+==24315== Profiling application: ./naive
+==24315== Profiling result:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 36.34%  5.5360us         2  2.7680us  2.7520us  2.7840us  [CUDA memcpy DtoH]
+ 23.11%  3.5200us         3  1.1730us  1.0240us  1.4400us  [CUDA memcpy HtoD]
+ 20.38%  3.1040us         1  3.1040us  3.1040us  3.1040us  void mgpu::KernelScanParallel<mgpu::LaunchBoxVT<int=256, int=1, int=0, int=256, int=1, int=0, int=256, int=1, int=0>, mgpu::MgpuScanType, int*, int*, int, mgpu::plus<int>>(int=0, int, int=1, int=0, int=0*, int=256)
+ 20.17%  3.0720us         1  3.0720us  3.0720us  3.0720us  simpleMerge(int*, int*, int*, int*, int)
+
+==24315== API calls:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 97.19%  48.834ms         1  48.834ms  48.834ms  48.834ms  cudaFuncGetAttributes
+  1.00%  501.26us         1  501.26us  501.26us  501.26us  cudaMallocHost
+  0.46%  228.94us         1  228.94us  228.94us  228.94us  cudaFreeHost
+  0.23%  116.14us        83  1.3990us     207ns  43.509us  cuDeviceGetAttribute
+  0.22%  108.64us         5  21.728us  5.8050us  79.535us  cudaMalloc
+  0.20%  102.30us         1  102.30us  102.30us  102.30us  cudaGetDeviceProperties
+  0.19%  93.407us         5  18.681us  5.8620us  63.564us  cudaFree
+  0.16%  80.441us         5  16.088us  6.9320us  24.719us  cudaMemcpy
+  0.09%  43.452us         2  21.726us  15.551us  27.901us  cudaMemGetInfo
+  0.08%  39.257us         2  19.628us  12.431us  26.826us  cudaLaunch
+  0.04%  21.049us         1  21.049us  21.049us  21.049us  cudaStreamCreate
+  0.03%  16.520us         2  8.2600us  3.1820us  13.338us  cudaSetDevice
+  0.03%  14.410us         1  14.410us  14.410us  14.410us  cuDeviceGetName
+  0.02%  9.8180us         1  9.8180us  9.8180us  9.8180us  cuDeviceTotalMem
+  0.01%  6.8010us         1  6.8010us  6.8010us  6.8010us  cudaStreamDestroy
+  0.01%  6.1300us         1  6.1300us  6.1300us  6.1300us  cudaEventCreateWithFlags
+  0.01%  4.6840us         3  1.5610us     715ns  2.9610us  cudaEventDestroy
+  0.01%  4.5100us        11     410ns     204ns  1.1050us  cudaSetupArgument
+  0.01%  4.1380us         2  2.0690us  1.2060us  2.9320us  cudaEventCreate
+  0.01%  3.0690us         1  3.0690us  3.0690us  3.0690us  cudaGetDeviceCount
+  0.01%  2.9670us         2  1.4830us     483ns  2.4840us  cuDeviceGetCount
+  0.00%  1.5280us         2     764ns     356ns  1.1720us  cudaConfigureCall
+  0.00%     601ns         2     300ns     223ns     378ns  cuDeviceGet
