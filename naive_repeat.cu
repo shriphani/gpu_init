@@ -44,7 +44,16 @@ int *partitionAndRun(int *items, int *freqs, int N, int &resultSize, ContextPtr 
 
 	cudaMalloc( (void **)&deviceResult, resultSize * sizeof(int));
 
+#ifdef PROFILING
+	cudaProfilerStart();
+#endif
+
 	simpleMerge<<<numBlocks, CTASize>>>(deviceItems, deviceFreqs, deviceResult, devicePos, N);
+
+#ifdef PROFILING
+	cudaProfilerStop();
+#endif
+
 
 	int *result = new int[resultSize];
 

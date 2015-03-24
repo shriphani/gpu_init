@@ -1,7 +1,5 @@
-#include <stdio.h>
-#include "moderngpu.cuh"
+#include "repeat.cuh"
 
-#define EXIT_SUCCESS 0
 
 using namespace mgpu;
 
@@ -55,7 +53,16 @@ int *partitionAndRun(int *items, int *freqs, int N, int &resultSize, ContextPtr 
 
 	int *result = new int[resultSize];
 
+#ifdef PROFILING
+	printf("PROFILING!!!\n");
+	cudaProfilerStart();
+#endif
+
 	binarySearchRepeat<<<numBlocks, CTASize>>>(deviceItems, deviceFreqs, deviceResult, devicePos, N, resultSize);
+
+#ifdef PROFILING
+	cudaProfilerStop();
+#endif
 
 	cudaMemcpy( result, deviceResult, resultSize * sizeof(int), cudaMemcpyDeviceToHost );
 
@@ -66,25 +73,4 @@ int *partitionAndRun(int *items, int *freqs, int N, int &resultSize, ContextPtr 
 
 
 	return result;
-}
-
-int main(int argc, char ** argv) {
-	ContextPtr context = CreateCudaDevice(argc, argv, true);
-
-	int items[5] = { 2, 5, 8, 2, 10 };
-	int freqs[5] = { 10, 3, 0, 6, 5 };
-
-	int N = 5;
-	int resultSize;
-
-	int *result = partitionAndRun(items, freqs, N, resultSize, context);
-	
-	for (int i = 0; i < resultSize; i++) {
-		printf("%d, ", result[i]);
-	}
-
-	printf("\n");
-
-	delete[] result;
-
 }
