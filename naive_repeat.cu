@@ -66,23 +66,3 @@ int *partitionAndRun(int *items, int *freqs, int N, int &resultSize, ContextPtr 
 
 	return result;
 }
-
-int main(int argc, char ** argv) {
-	ContextPtr context = CreateCudaDevice(argc, argv, true);
-
-	int items[5] = { 2, 5, 8, 2, 10 };
-	int freqs[5] = { 10, 3, 0, 6, 5 };
-
-	int N = 5;
-	int resultSize;
-
-	int *result = partitionAndRun(items, freqs, N, resultSize, context);
-
-	for (int i = 0; i < resultSize; i++) {
-		printf("%d, ", result[i]);
-	}
-
-	printf("\n");
-
-	delete[] result;
-}
