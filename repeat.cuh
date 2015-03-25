@@ -2,7 +2,7 @@
 #include "moderngpu.cuh"
 
 // uncomment to profile everything
-// #define PROFILING 1
+#define PROFILING 1
 
 #ifdef PROFILING
 #include <cuda_profiler_api.h>

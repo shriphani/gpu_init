@@ -28,7 +28,9 @@ void simpleMerge(int *items, int *freqs, int *result, int *pos, int numItems) {
 
 int *partitionAndRun(int *items, int *freqs, int N, int &resultSize, ContextPtr context) {
 #ifdef PROFILING
-	cudaProfilerInitialize();
+	cudaEvent_t start, stop;
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
 #endif
 
 	int CTASize = 1024;
@@ -49,15 +51,20 @@ int *partitionAndRun(int *items, int *freqs, int N, int &resultSize, ContextPtr 
 	cudaMalloc( (void **)&deviceResult, resultSize * sizeof(int));
 
 #ifdef PROFILING
-	cudaProfilerStart();
+	cudaEventRecord(start);
 #endif
 
 	simpleMerge<<<numBlocks, CTASize>>>(deviceItems, deviceFreqs, deviceResult, devicePos, N);
 
 #ifdef PROFILING
-	cudaProfilerStop();
+	cudaEventRecord(stop);
 #endif
 
+
+	//cudaEventSynchronize(stop);
+	/*float milliseconds = 0;
+	cudaEventElapsedTime(&milliseconds, start, stop);
+	printf("Kernel time: %f", milliseconds);*/
 
 	int *result = new int[resultSize];
 

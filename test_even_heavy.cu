@@ -21,27 +21,27 @@ int main(int argc, char ** argv) {
     int N = 5;
 
     for (int i = 0; i < N; i++) {
-        freqs[i] = 1000;
+        freqs[i] = 100;
     }
 
-    int dest[5000];
+    int dest[500];
 
     int resultSize;
-    int resCount;
+    int resCount=0;
 
     int *result = partitionAndRun(items, freqs, N, resultSize, context);
     testRepeat(items, freqs, N, dest, resCount);
     
     if (resultSize != resCount) {
         delete[] result;
-            printf("Fuck up\n");
+            printf("Fuck up\n%d:%d", resultSize, resCount);
             exit(1);
     }
 
     for (int i = 0; i < resultSize; i++) {
         if (dest[i] != result[i]) {
+            printf("Fuck up\n%d:%d:%d\n", i, result[i], dest[i]);
             delete[] result;
-            printf("Fuck up\n");
             exit(1);
         }
     }

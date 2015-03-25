@@ -1,37 +1,48 @@
 #include <stdio.h>
 #include "moderngpu.cuh"
 
+#define CTA_SIZE 256
+
 using namespace mgpu;
 
 __global__
 void warpRepeat(int *items, int *freqs, int *result, int *pos, int numItems, int numResults) {
 
+	const int nWarpsPerCTA = CTA_SIZE / 32;
+	const int tid = threadIdx.x + (blockDim.x * blockIdx.x);
+	const int wid = tid / 32;
+	const int lane = tid % 32;
+	const int lwid = wid % nWarpsPerCTA; 
 	// tid 0 fetches the item and the frequency list
-	int itemIdx = blockIdx.x;
+	int itemIdx = wid;
 
-	__shared__ int warpItem;
-	__shared__ int warpFreq;
+	if (itemIdx >= numItems)
+		return;
 
-	if (threadIdx.x == 0) {
+	__shared__ int warpItem[CTA_SIZE / 32];
+	__shared__ int warpFreq[CTA_SIZE / 32];
 
-		warpItem = items[itemIdx];
-		warpFreq = freqs[itemIdx];
+	if (lane == 0) {
 
-		printf("Block id: %d\n", itemIdx);
+		warpItem[lwid] = items[itemIdx];
+		warpFreq[lwid] = freqs[itemIdx];
+
+		//printf("Item it: %d\n, Item freq: %d\n", itemIdx, warpFreq);
 	}
 
 	__syncthreads();
 
-	for (int i = threadIdx.x; i < warpFreq; i += 32) {
+	for (int i = lane; i < warpFreq[lwid]; i += 32) {
+		//printf("item id: %d, freq: %d\n", lwid, warpFreq[lwid]);
 		int position = pos[itemIdx] + i;
-		result[position] = warpItem;
+		result[position] = warpItem[lwid];
 	}
 }
 
 
 int *partitionAndRun(int *items, int *freqs, int N, int &resultSize, ContextPtr context) {
 
-	int CTASize = 32;
+	const int CTASize = 256;
 
 	int *deviceItems, *deviceFreqs, *deviceResult, *devicePos;
 
@@ -47,7 +58,7 @@ int *partitionAndRun(int *items, int *freqs, int N, int &resultSize, ContextPtr 
 
 	cudaMalloc( (void **)&deviceResult, resultSize * sizeof(int));
 
-	int numBlocks = N;
+	int numBlocks = (N * 32 + (CTASize - 1)) / CTA_SIZE;
 
 	printf("Num blocks: %d\n", numBlocks);
 
