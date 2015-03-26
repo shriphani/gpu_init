@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include "moderngpu.cuh"
-#include <math.h>
 
 #define CTA_SIZE 256
 #define WARP_SIZE 32
