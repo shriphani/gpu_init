@@ -6,7 +6,7 @@ MGPU-BUILD=-lmgpu
 
 MGPU-DIR=-L ../moderngpu/
 
-ARCH=sm_30
+ARCH=sm_52
 
 NV-MODERNGPU=$(CC)  -arch=$(ARCH) -I $(INCLUDE) $(MGPU-BUILD) -lineinfo
 
@@ -14,15 +14,13 @@ NV-MODERNGPU-O=$(CC) -c -arch=$(ARCH) -I $(INCLUDE) -lineinfo
 
 CPP-COMPILER=g++
 
-all: naive binsearch
-
-objects: naive_repeat.o binsearch_repeat.o warp_repeat.o test.o test_even_heavy.o test_skewed_heavy.o test1m.o
+objects: naive_repeat.o binsearch_repeat.o warp_repeat.o warp_repeat_read.o test.o test_even_heavy.o test_skewed_heavy.o test1m.o
 
 %.o: %.cu
 	$(NV-MODERNGPU-O) $< -o $@
 
 .PHONY: test
-test: test-binsearch test-naive test-binsearch-even-heavy test-naive-even-heavy test-binsearch-skewed-heavy test-naive-skewed-heavy
+test: test-binsearch test-naive test-binsearch-even-heavy test-naive-even-heavy test-binsearch-skewed-heavy test-naive-skewed-heavy test-1m-even-naive test-1m-even-binsearch test-1m-even-warp test-1m-even-warp2
 
 test-binsearch: test.o binsearch_repeat.o
 	$(NV-MODERNGPU) $(MGPU-DIR) test.o binsearch_repeat.o -o test-binsearch $(MGPU-BUILD)
@@ -54,5 +52,8 @@ test-1m-even-warp: test1m.o warp_repeat.o
 test-1m-even-binsearch: test1m.o binsearch_repeat.o
 	$(NV-MODERNGPU) $(MGPU-DIR) $^ -o test-1m-even-binsearch $(MGPU-BUILD)
 
+test-1m-even-warp2: test1m.o warp_repeat_read.o
+	$(NV-MODERNGPU) $(MGPU-DIR) $^ -o test-1m-even-warp2 $(MGPU-BUILD)
+
 clean:
-	rm -rf a.out naive binsearch test-binsearch test-naive test-binsearch-even-heavy test-naive-even-heavy test-binsearch-skewed-heavy test-naive-skewed-heavy
+	rm -rf a.out naive binsearch test-binsearch test-naive test-binsearch-even-heavy test-naive-even-heavy test-binsearch-skewed-heavy test-naive-skewed-heavy test-1m-even-warp2

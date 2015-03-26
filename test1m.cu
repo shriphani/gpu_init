@@ -1,7 +1,7 @@
 #include "repeat.cuh"
 
 void testRepeat(int *items, int *freqs, int nItems, int *dest, int &resCount) {
- 
+
     for (int i = 0; i < nItems; i++) {
     	resCount += freqs[i];
     }
@@ -35,7 +35,7 @@ int main(int argc, char ** argv) {
 
     int *result = partitionAndRun(items, freqs, N, resultSize, context);
     testRepeat(items, freqs, N, dest, resCount);
-    
+
     if (resultSize != resCount) {
         delete[] result;
             printf("Fuck up\n%d:%d", resultSize, resCount);
