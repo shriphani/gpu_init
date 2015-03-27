@@ -16,7 +16,7 @@ void testRepeat(int *items, int *freqs, int nItems, int *dest, int &resCount) {
 int main(int argc, char ** argv) {
     ContextPtr context = CreateCudaDevice(argc, argv, true);
 
-    int N = 100000;
+    int N = 10000;
     int items[100000];
     int freqs[100000];
 
